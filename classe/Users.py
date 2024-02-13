@@ -1,4 +1,5 @@
-from classe.Database import Database
+from Database import Database
+from ChatServeur import ChatServeur
 
 class User:
     def __init__(self, first_name, last_name, email, password):
@@ -18,3 +19,8 @@ class User:
         db = Database()
         query = "SELECT * FROM users"
         return db.fetch_data(query)
+
+# Modife 
+if __name__ == "__main__":
+    server = ChatServeur('localhost', 5555)
+
