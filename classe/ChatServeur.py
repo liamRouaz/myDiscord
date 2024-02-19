@@ -1,53 +1,64 @@
 from Database import Database
+from Users import Users
+from Channel import Channel
+from Message import Message
 import socket
 from threading import Thread
-import datetime
+from datetime import datetime
 
 class ChatServeur:
-    def __init__(self, host, port, channel_id, user_id):
+    def __init__(self, host, port):
         self.host = host
         self.port = port
-        self.serveur_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.clients = []
         self.db = Database()
-        self.channel_id = channel_id
-        self.user_id = user_id
+        self.user = Users()
+        self.channels = []
 
     def start(self):
-        self.serveur_socket.bind((self.host, self.port))
-        self.serveur_socket.listen(5)
+        self.server_socket.bind((self.host, self.port))
+        self.server_socket.listen(5)
         print("Serveur started on {}:{}".format(self.host, self.port))
+        # self.create_channels()
 
         while True:
-            client_socket, client_address = self.serveur_socket.accept()
+            client_socket, client_address = self.server_socket.accept()
             print("New connection from:", client_address)
             client_handler = Thread(target=self.handle_client, args=(client_socket,))
             client_handler.start()
 
+    def create_channels(self):
+        # Créer des canaux
+        self.channels.append(Channel("sport", is_public=True))
+        self.channels.append(Channel("cinéma", is_public=True))
+        self.channels.append(Channel("manga", is_public=True))
+
     def handle_client(self, client_socket):
         self.clients.append(client_socket)
-        channel_id = self.get_channel_id(client_socket)
+        # channel_id = self.get_channel_id(client_socket)
 
         while True:
             try:
                 message = client_socket.recv(1024).decode()
                 if not message:
+                    print("Received:", message)
                     break
-                print("Received:", message)
+                
+                current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-                # Obtenir la date et l'heure actuelles
-                current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
-                # exemple pour quiter
                 if message == "/quit":
                     self.disconnect_client(client_socket)
                     break
 
-                # Déterminer l'identifiant du canal en fonction des données reçues du client
-                # Channel ID needs to be obtained from client data
-                channel_id = self.get_channel_id(client_socket)  # Pass client_socket
+                channel_id = self.get_channel_id(client_socket)
                 user_id = self.get_user_id(client_socket)
                 self.db.insert_message(user_id, message, current_time, channel_id)
+                print(self.channels)
+                for channel in self.channels:
+                    print(channel)
+                    if channel.id == channel_id and (channel.is_public or not channel.is_public and self.user.is_permis_channel(channel)):
+                        channel.add_message(Message(user_id, message, current_time))
 
                 self.broadcast(message, client_socket)
             except Exception as e:
@@ -57,19 +68,14 @@ class ChatServeur:
         client_socket.close()
         self.clients.remove(client_socket)
 
-    def broadcast(self, message, client_socket):
-        for client in self.clients:
-            if client != client_socket:
-                try:
-                    client.sendall(message.encode())
-                except Exception as e:
-                    print("Error:", e)
-
-    def get_user_id(self, client_socket):
-        user_id = None
-        if hasattr(client_socket, 'user_id'):
-            user_id = client_socket.user_id
-        return user_id               
+    def create_user(self, user_info):
+        last_name = user_info.get("last_name")
+        email = user_info.get("email")
+        password = user_info.get("password")
+        if last_name and email and password:
+            self.users = Users(self.db, last_name, email, password)
+        else:
+            print("Informations utilisateur incomplètes.")
 
 
     def authenticate_user(self, email, password):
@@ -93,27 +99,114 @@ class ChatServeur:
             success = True
         except Exception as e:
             print("Error during user registration:", e)
-        return success
-    
+        return success        
+
+    def create_channel(self, channel_id, name, is_public):
+        channel = Channel(channel_id, name, is_public)
+        self.channels.append(channel)           
+
+    def broadcast(self, message, client_socket):
+        for client in self.clients:
+            if client != client_socket:
+                try:
+                    client.sendall(message.encode())
+                except Exception as e:
+                    print("Error:", e)
+
+    def get_user_id(self, client_socket):
+        user_id = None
+        if hasattr(client_socket, 'user_id'):
+            user_id = client_socket.user_id
+        return user_id
+
     def get_channel_id(self, client_socket):
         channel_id = None
         if hasattr(client_socket, 'channel_id'):
             channel_id = client_socket.channel_id
         return channel_id
 
-
     def disconnect_client(self, client_socket):
         try:
             client_socket.close()
             print("Client disconnected.")
+            if self.users and self.users.id == client_socket.user_id:
+                self.users = None
         except Exception as e:
             print("Error occurred while disconnecting client:", e)
 
+
+
+
 if __name__ == "__main__":
     HOST = 'localhost'
-    PORT = 5555
-    # serveur = ChatServeur(HOST, PORT)
-    serveur = ChatServeur(HOST, PORT, channel_id=None, user_id=None)
+    PORT = 8585
+    serveur = ChatServeur(HOST, PORT)
+    serveur.handle_client()
     serveur.start()
+  
 
 
+
+# import socket
+# from threading import Thread
+
+# class ChatServer:
+#     MAX_MESSAGE_LENGTH = 1024
+
+#     def __init__(self, host, port):
+#         self.host = host
+#         self.port = port
+#         self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+#         self.clients = []
+
+#     def start(self):
+#         try:
+#             self.server_socket.bind((self.host, self.port))
+#             self.server_socket.listen(5)
+#             print(f"Server started on {self.host}:{self.port}")
+#             self.accept_clients()
+#         except Exception as e:
+#             print("Error starting server:", e)
+
+#     def accept_clients(self):
+#         while True:
+#             client_socket, client_address = self.server_socket.accept()
+#             print("New connection from:", client_address)
+#             client_handler = Thread(target=self.handle_client, args=(client_socket,))
+#             client_handler.start()
+
+#     def handle_client(self, client_socket):
+#         try:
+#             self.clients.append(client_socket)
+#             while True:
+#                 message = client_socket.recv(ChatServer.MAX_MESSAGE_LENGTH).decode()
+#                 if not message:
+#                     print("Received empty message, closing connection.")
+#                     break
+#                 self.broadcast(message, client_socket)
+#         except Exception as e:
+#             print("Error handling client:", e)
+#         finally:
+#             self.disconnect_client(client_socket)
+
+#     def broadcast(self, message, sender_socket):
+#         for client_socket in self.clients:
+#             if client_socket != sender_socket:
+#                 try:
+#                     client_socket.sendall(message.encode())
+#                 except Exception as e:
+#                     print("Error sending message to client:", e)
+
+#     def disconnect_client(self, client_socket):
+#         try:
+#             client_socket.close()
+#             print("Client disconnected.")
+#             self.clients.remove(client_socket)
+#         except Exception as e:
+#             print("Error disconnecting client:", e)
+
+# if __name__ == "__main__":
+#     HOST = 'localhost'
+#     PORT = 8585
+#     server = ChatServer(HOST, PORT)
+#     server.start()

@@ -1,0 +1,75 @@
+import tkinter as tk
+from PIL import Image, ImageTk
+from tkinter import messagebox
+
+class Interface_login:
+    def __init__(self):
+        self.screen = tk.Tk()
+        self.screen.title("MyDiscord")
+        self.screen.geometry("600x700")
+        self.screen.resizable(False, False)
+        self.screen.configure(background="#343541")
+
+    def background_image(self):
+        # Créer un Canvas pour afficher l'image
+        canvas = tk.Canvas(self.screen, width=500, height=550, bg="#343541", borderwidth=0, highlightthickness=0)
+        canvas.pack()
+
+        # Charger l'image et l'afficher dans le Canvas
+        self.image_background = Image.open("classe\discorde.png")
+        self.image_background = self.image_background.resize((400, 450), Image.LANCZOS)  # Redimensionner l'image à la taille souhaitée
+        self.photo_background = ImageTk.PhotoImage(self.image_background)  # Store the image object as an instance variable
+        canvas.create_image(62,  50, anchor=tk.NW, image=self.photo_background)  # Use the instance variable here
+        
+    def enter_username(self):
+        # Création et placement du label et du champ de saisie pour le nom d'utilisateur
+        self.label_username = tk.Label(self.screen, text="Nom d'utilisateur :", bg="#343541")
+        self.label_username.pack()
+
+        self.entry_username = tk.Entry(self.screen)
+        self.entry_username.pack()
+
+    def enter_password(self):
+        # Création et placement du label et du champ de saisie pour le mot de passe
+        self.label_password = tk.Label(self.screen, text="Mot de passe :", bg="#343541")
+        self.label_password.pack()
+
+        self.entry_password = tk.Entry(self.screen, show="*") # Affiche des astérisques pour le mot de passe
+        self.entry_password.pack()
+
+    def btn_login(self):
+        # Création et placement du bouton de connexion
+        self.button_login = tk.Button(self.screen, text="Se connecter", command=self.validate_login)
+        self.button_login.pack()
+
+    def btn_forgot_password(self):
+        # Création et placement du bouton pour le cas de mot de passe oublié ou email perdu
+        self.button_forgot_password = tk.Button(self.screen, text="Mot de passe ou Email perdu?", command=self.forgot_password)
+        self.button_forgot_password.pack()
+
+    # Fonction pour valider la connexion
+    def validate_login(self):
+        username = self.entry_username.get()
+        password = self.entry_password.get()
+
+        # Vous pouvez ajouter votre propre logique de validation ici
+        if username == "admin" and password == "password":
+            messagebox.showinfo("Connexion réussie", "Bienvenue, Admin !")
+        else:
+            messagebox.showerror("Échec de la connexion", "Identifiant ou mot de passe incorrect")
+
+    # Fonction pour gérer le cas de mot de passe oublié ou email perdu
+    def forgot_password(self):
+        # Vous pouvez implémenter votre logique pour gérer les mots de passe oubliés ou les e-mails perdus ici
+        messagebox.showinfo("Fonctionnalité non implémentée", "Désolé, cette fonctionnalité n'est pas encore disponible.")
+
+
+# interface_login = Interface_login()
+# interface_login.background_image()
+# interface_login.enter_username()
+# interface_login.enter_password()
+# interface_login.btn_login()
+# interface_login.btn_forgot_password()
+# interface_login.screen.mainloop()
+
+
