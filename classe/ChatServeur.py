@@ -5,6 +5,7 @@ from Message import Message
 import socket
 from threading import Thread
 from datetime import datetime
+import mysql.connector
 
 class ChatServeur:
     def __init__(self, host, port):
@@ -13,7 +14,7 @@ class ChatServeur:
         self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.clients = []
         self.db = Database()
-        self.user = Users()
+        self.user = Users('db', 'first_name', 'last_name', 'email', 'password')
         self.channels = []
 
     def start(self):
@@ -103,7 +104,68 @@ class ChatServeur:
 
     def create_channel(self, channel_id, name, is_public):
         channel = Channel(channel_id, name, is_public)
-        self.channels.append(channel)           
+        self.channels.append(channel)  
+
+    def execute_query(self, query, params=None):
+        try:
+            cursor = self.connection.cursor()
+            cursor.execute(query, params)
+            if params is not None:
+                self.connection.commit()
+            if query.strip().upper().startswith('INSERT'):
+                return cursor.lastrowid   
+        except mysql.connector.Error as err:
+            print("Error executing query:", err)
+            raise
+        finally:
+            if cursor:
+                cursor.close()
+
+    def fetch_data(self, query, params=None):
+        try:
+            cursor = self.connection.cursor()
+            cursor.execute(query, params)
+            result = cursor.fetchall()
+            return result
+        except mysql.connector.Error as err:
+            print("Error fetching data:", err)
+            raise
+        finally:
+            if cursor:
+                cursor.close()    
+
+    def insert_message(self, user_id, content, timestamp, channel_id):
+        query = "INSERT INTO messages (author, content, timestamp, channel_id) VALUES (%s, %s, %s, %s)"
+        params = (user_id, content, timestamp, channel_id)
+        self.execute_query(query, params)
+
+    def insert_channel(self, name, is_public):
+        query = "INSERT INTO channels (name, is_public) VALUES (%s, %s)"
+        params = (name, is_public)
+        self.execute_query(query, params)   
+
+    def insert_user(self, first_name, last_name, email, password):
+        query = "INSERT INTO users (first_name, last_name, email, password) VALUES (%s, %s, %s, %s)"
+        params = (first_name, last_name, email, password)
+        self.execute_query(query, params)
+
+    def get_channels(self):
+        query = "SELECT * FROM channels"
+        return self.fetch_data(query)
+
+    def get_users(self):
+        query = "SELECT * FROM users"
+        return self.fetch_data(query)
+
+    def get_messages_for_channel(self, channel_id):
+        query = "SELECT * FROM messages WHERE channel_id = %s"
+        params = (channel_id,)
+        return self.fetch_data(query, params)
+
+    def get_reactions_for_message(self, message_id):
+        query = "SELECT * FROM reactions WHERE message_id = %s"
+        params = (message_id,)
+        return self.fetch_data(query, params)             
 
     def broadcast(self, message, client_socket):
         for client in self.clients:
@@ -111,7 +173,7 @@ class ChatServeur:
                 try:
                     client.sendall(message.encode())
                 except Exception as e:
-                    print("Error:", e)
+                    print(f"Error broadcasting message: {e}")
 
     def get_user_id(self, client_socket):
         user_id = None
@@ -136,13 +198,12 @@ class ChatServeur:
 
 
 
-
-if __name__ == "__main__":
-    HOST = 'localhost'
-    PORT = 8585
-    serveur = ChatServeur(HOST, PORT)
-    serveur.handle_client()
-    serveur.start()
+# if __name__ == "__main__":
+#     HOST = 'localhost'
+#     PORT = 8585
+#     serveur = ChatServeur(HOST, PORT)
+#     serveur.handle_client()
+#     serveur.start()
   
 
 

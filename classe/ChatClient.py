@@ -94,3 +94,5 @@ if __name__ == "__main__":
     PORT = 8585
     client = ChatClient(HOST, PORT)
     client.start()
+
+

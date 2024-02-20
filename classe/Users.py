@@ -43,8 +43,8 @@
 from Database import Database
 
 class Users:
-    def __init__(self, db, first_name, last_name, email, password):
-        self.db = db
+    def __init__(self, first_name, last_name, email, password):
+        self.db = Database()
         self.first_name = first_name
         self.last_name = last_name
         self.email = email
