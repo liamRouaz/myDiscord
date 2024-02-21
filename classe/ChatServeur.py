@@ -14,7 +14,7 @@ class ChatServeur:
         self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.clients = []
         self.db = Database()
-        self.user = Users('db', 'first_name', 'last_name', 'email', 'password')
+        self.user = Users('first_name', 'last_name', 'email', 'password')
         self.channels = []
 
     def start(self):
@@ -34,6 +34,14 @@ class ChatServeur:
         self.channels.append(Channel("sport", is_public=True))
         self.channels.append(Channel("cinéma", is_public=True))
         self.channels.append(Channel("manga", is_public=True))
+
+    def broadcast(self, message, client_socket):
+        for client in self.clients:
+            if client != client_socket:
+                try:
+                    client.sendall(message.encode())
+                except Exception as e:
+                    print(f"Error broadcasting message: {e}")
 
     def handle_client(self, client_socket):
         self.clients.append(client_socket)
@@ -78,7 +86,6 @@ class ChatServeur:
         else:
             print("Informations utilisateur incomplètes.")
 
-
     def authenticate_user(self, email, password):
         user_id = None
         try:
@@ -89,7 +96,26 @@ class ChatServeur:
                 user_id = result[0][0]
         except Exception as e:
             print("Error during user authentication:", e)
-            return user_id
+        return user_id
+
+    def get_user_info(self, user_id):
+        user_info = None
+        try:
+            query = "SELECT * FROM users WHERE id = %s"
+            params = (user_id,)
+            result = self.db.fetch_data(query, params)
+            if result:
+                user_info = {
+                    "id": result[0][0],
+                    "first_name": result[0][1],
+                    "last_name": result[0][2],
+                    "email": result[0][3],
+                    "password": result[0][4]
+                }
+        except Exception as e:
+            print("Error fetching user info:", e)
+        return user_info
+
 
     def register_user(self, first_name, last_name, email, password):
         success = False
@@ -167,14 +193,7 @@ class ChatServeur:
         params = (message_id,)
         return self.fetch_data(query, params)             
 
-    def broadcast(self, message, client_socket):
-        for client in self.clients:
-            if client != client_socket:
-                try:
-                    client.sendall(message.encode())
-                except Exception as e:
-                    print(f"Error broadcasting message: {e}")
-
+    
     def get_user_id(self, client_socket):
         user_id = None
         if hasattr(client_socket, 'user_id'):

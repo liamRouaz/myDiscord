@@ -1,14 +1,24 @@
 import tkinter as tk
-from PIL import Image, ImageTk
 from tkinter import messagebox
 
-class Interface_login:
-    def __init__(self):
+class InterfaceLogin:
+    def __init__(self, chat_server, chat_client):
+        self.chat_server = chat_server
+        self.chat_client = chat_client
         self.screen = tk.Tk()
         self.screen.title("MyDiscord")
         self.screen.geometry("600x700")
         self.screen.resizable(False, False)
         self.screen.configure(background="#343541")
+        self.create_widgets()
+
+    def create_widgets(self):
+        # Créez les widgets de l'interface ici
+        self.background_image()
+        self.enter_email()
+        self.enter_password()
+        self.btn_login()
+        self.btn_forgot_password()
 
     def background_image(self):
         # Créer un Canvas pour afficher l'image
@@ -16,18 +26,16 @@ class Interface_login:
         canvas.pack()
 
         # Charger l'image et l'afficher dans le Canvas
-        self.image_background = Image.open("classe\discorde.png")
-        self.image_background = self.image_background.resize((400, 450), Image.LANCZOS)  # Redimensionner l'image à la taille souhaitée
-        self.photo_background = ImageTk.PhotoImage(self.image_background)  # Store the image object as an instance variable
-        canvas.create_image(62,  50, anchor=tk.NW, image=self.photo_background)  # Use the instance variable here
-        
-    def enter_username(self):
-        # Création et placement du label et du champ de saisie pour le nom d'utilisateur
-        self.label_username = tk.Label(self.screen, text="Nom d'utilisateur :", bg="#343541")
-        self.label_username.pack()
+        self.image_background = tk.PhotoImage(file="classe/discorde.png")
+        canvas.create_image(62,  50, anchor=tk.NW, image=self.image_background)  
 
-        self.entry_username = tk.Entry(self.screen)
-        self.entry_username.pack()
+    def enter_email(self):
+        # Création et placement du label et du champ de saisie pour l'email
+        self.label_email = tk.Label(self.screen, text="Email :", bg="#343541")
+        self.label_email.pack()
+
+        self.entry_email = tk.Entry(self.screen)
+        self.entry_email.pack()
 
     def enter_password(self):
         # Création et placement du label et du champ de saisie pour le mot de passe
@@ -49,12 +57,18 @@ class Interface_login:
 
     # Fonction pour valider la connexion
     def validate_login(self):
-        username = self.entry_username.get()
+        email = self.entry_email.get()
         password = self.entry_password.get()
 
-        # Vous pouvez ajouter votre propre logique de validation ici
-        if username == "admin" and password == "password":
-            messagebox.showinfo("Connexion réussie", "Bienvenue, Admin !")
+        # Authentifier l'utilisateur avec le serveur
+        user_id = self.chat_server.authenticate_user(email, password)
+
+        if user_id is not None:
+            messagebox.showinfo("Connexion réussie", f"Bienvenue, {email} !")
+            # Connectez le client au serveur après la validation des identifiants
+            self.chat_client.connect_to_server(email, password)
+            # Fermez l'interface après la connexion
+            self.screen.destroy()
         else:
             messagebox.showerror("Échec de la connexion", "Identifiant ou mot de passe incorrect")
 
@@ -62,6 +76,7 @@ class Interface_login:
     def forgot_password(self):
         # Vous pouvez implémenter votre logique pour gérer les mots de passe oubliés ou les e-mails perdus ici
         messagebox.showinfo("Fonctionnalité non implémentée", "Désolé, cette fonctionnalité n'est pas encore disponible.")
+
 
 
 # interface_login = Interface_login()
