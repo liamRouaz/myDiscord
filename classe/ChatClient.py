@@ -101,6 +101,25 @@ class ChatClient:
             else:
                 print("Empty message. Please enter a valid message.")
 
+    def connect_to_server(self, email, password):
+        try:
+            self.client_socket.connect((self.host, self.port))
+            print("Connected to server.")
+            
+            # Envoyer les informations d'identification au serveur
+            credentials = f"{email}:{password}"
+            self.client_socket.sendall(credentials.encode())
+            print("Credentials sent to server.")
+
+            # Démarrer le thread pour recevoir les messages
+            receive_thread = threading.Thread(target=self.receive_messages)
+            receive_thread.start()
+
+            # Démarrer la boucle pour l'envoi de messages
+            self.send_messages()
+        except Exception as e:
+            print("Error:", e)
+
     def close_connection(self):
         try:
             self.client_socket.close()
@@ -108,18 +127,11 @@ class ChatClient:
         except Exception as e:
             print("Error:", e)
 
-    def connect_to_server(self, email, password):
-        try:
-            # Envoyer les informations d'identification au serveur
-            credentials = f"{email}:{password}"
-            self.client_socket.sendall(credentials.encode())
-            print("Credentials sent to server.")
-        except Exception as e:
-            print("Error sending credentials to server:", e)
-
 if __name__ == "__main__":
     HOST = 'localhost'
     PORT = 8585
     client = ChatClient(HOST, PORT)
     client.start()
+
+
 

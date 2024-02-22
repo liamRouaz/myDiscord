@@ -11,6 +11,8 @@ class InterfaceLogin:
         self.screen.resizable(False, False)
         self.screen.configure(background="#343541")
         self.create_widgets()
+        self.screen.mainloop()  # Démarrer la boucle principale après la création des widgets
+
 
     def create_widgets(self):
         # Créez les widgets de l'interface ici

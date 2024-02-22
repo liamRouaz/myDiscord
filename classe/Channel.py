@@ -33,7 +33,7 @@
 
 
 
-from Database import Database
+from ChatServeur import ChatServeur
 
 class Channel:
     def __init__(self, id, name, is_public):
@@ -41,26 +41,36 @@ class Channel:
         self.name = name
         self.is_public = is_public
         self.messages = []
-        self.db = Database()  # Initialisez l'attribut db en appelant le constructeur
-
+        self.server = ChatServeur()
+        
     def create_channel(self):
-        self.db.insert_channel(self.name, self.is_public)
+        self.server.insert_channel(self.name, self.is_public)
+
+    # def create_channel(self, channel_id, name, is_public):
+    #     channel = Channel(channel_id, name, is_public)
+    #     self.channels.append(channel) 
+
+    @staticmethod
+    def create_channels():
+        # Créer des canaux
+        ChatServeur().insert_channel("sport", is_public=True)
+        ChatServeur().insert_channel("cinéma", is_public=True)
+        ChatServeur().insert_channel("manga", is_public=True)
 
     @staticmethod
     def get_channels():
-        db = Database()
-        return db.get_channels()
-
+        return ChatServeur().get_channels()
+    
     def add_message(self, message):
         self.messages.append(message)
 
     def get_messages(self):
         return self.messages
 
-    def save_to_db(self):  # Assurez-vous d'appeler la méthode execute_query de la classe Database
+    def save_to_server(self):  # Assurez-vous d'appeler la méthode execute_query de la classe ChatServeur
         query = "INSERT INTO channels (name, is_public) VALUES (%s, %s)"
         params = (self.name, self.is_public)
-        self.db.execute_query(query, params)
+        self.server.execute_query(query, params)
 
 
 
