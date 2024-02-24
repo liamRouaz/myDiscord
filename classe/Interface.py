@@ -1,18 +1,22 @@
 import tkinter as tk
 from tkinter import messagebox
+from ChatServeur import ChatServeur
+from ChatClient import ChatClient
+
 
 class InterfaceLogin:
-    def __init__(self, chat_server, chat_client):
-        self.chat_server = chat_server
-        self.chat_client = chat_client
+    def __init__(self):
+        self.chat_server = ChatServeur('localhost', 8585)
+        self.chat_client = ChatClient('localhost', 8585)
         self.screen = tk.Tk()
         self.screen.title("MyDiscord")
         self.screen.geometry("600x700")
         self.screen.resizable(False, False)
         self.screen.configure(background="#343541")
         self.create_widgets()
+        self.entry_email.get()
+        self.entry_password.get()
         self.screen.mainloop()  # Démarrer la boucle principale après la création des widgets
-
 
     def create_widgets(self):
         # Créez les widgets de l'interface ici
@@ -57,22 +61,28 @@ class InterfaceLogin:
         self.button_forgot_password = tk.Button(self.screen, text="Mot de passe ou Email perdu?", command=self.forgot_password)
         self.button_forgot_password.pack()
 
+    
     # Fonction pour valider la connexion
     def validate_login(self):
         email = self.entry_email.get()
         password = self.entry_password.get()
-
         # Authentifier l'utilisateur avec le serveur
         user_id = self.chat_server.authenticate_user(email, password)
+        print(user_id)
 
         if user_id is not None:
             messagebox.showinfo("Connexion réussie", f"Bienvenue, {email} !")
             # Connectez le client au serveur après la validation des identifiants
-            self.chat_client.connect_to_server(email, password)
+            self.chat_client.connect_to_server(email, password, user_id)  # Fournir également l'identifiant de l'utilisateur
             # Fermez l'interface après la connexion
             self.screen.destroy()
         else:
             messagebox.showerror("Échec de la connexion", "Identifiant ou mot de passe incorrect")
+
+
+    # def open_main_interface(self):
+    #     # Ajoutez le code pour ouvrir l'interface principale après la connexion réussie
+    #     pass
 
     # Fonction pour gérer le cas de mot de passe oublié ou email perdu
     def forgot_password(self):
@@ -80,13 +90,5 @@ class InterfaceLogin:
         messagebox.showinfo("Fonctionnalité non implémentée", "Désolé, cette fonctionnalité n'est pas encore disponible.")
 
 
-
-# interface_login = Interface_login()
-# interface_login.background_image()
-# interface_login.enter_username()
-# interface_login.enter_password()
-# interface_login.btn_login()
-# interface_login.btn_forgot_password()
-# interface_login.screen.mainloop()
 
 

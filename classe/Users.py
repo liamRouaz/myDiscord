@@ -39,34 +39,4 @@ class Users:
 
 
 
-    # def authenticate_user(self, email, password):
-    #         # Code pour authentifier l'utilisateur
-    #         # Supposez qu'il y ait une liste d'utilisateurs enregistrés dans self.users
-    #         for user in self.users:
-    #             if user.email == email and user.password == password:
-    #                 return user.id
-    #         return None
-
-
-
-
-
-
-
-# from Database import Database
-
-# class Users:
-#     def __init__(self):
-#         self.db = Database()
-
-#     def register_user(self, first_name, last_name, email, password):
-#         self.db.insert_user(first_name, last_name, email, password)
-
-#     def authenticate_user(self, email, password):
-#         users = self.db.get_users()
-#         for user in users:
-#             if user[3] == email and user[4] == password:
-#                 return user[0]  # Return user_id if authentication successful
-#         return None
-
 
