@@ -5,7 +5,7 @@ import mysql.connector
 from Database import Database
 #from Message import Message
 
-class ChatServeur:
+class ChatServeur():
     def __init__(self, host, port):
         self.host = host
         self.port = port
