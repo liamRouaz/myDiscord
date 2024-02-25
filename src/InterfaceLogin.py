@@ -15,9 +15,9 @@ class InterfaceLogin:
         self.screen.geometry("600x700")
         self.screen.resizable(False, False)
         self.screen.configure(background="#343541")
-        self.create_widgets()
-        self.entry_email.get()
-        self.entry_password.get()
+        # self.create_widgets()
+        # self.entry_email.get()
+        # self.entry_password.get()
 
 # # Créez un canevas pour afficher la vidéo
 #         self.canvas = tk.Canvas(self.screen, width=800, height=800)
@@ -54,14 +54,14 @@ class InterfaceLogin:
 #         if self.vid.isOpened():
 #             self.vid.release()
 
-    def create_widgets(self):
-        # Créez les widgets de l'interface ici
-        self.background_image()
-        self.enter_email()
-        self.enter_password()
-        self.btn_login()
-        self.btn_register()
-        self.btn_forgot_password()
+    # def create_widgets(self):
+    #     # Créez les widgets de l'interface ici
+    #     self.background_image()
+    #     self.enter_email()
+    #     self.enter_password()
+    #     self.btn_login()
+    #     self.btn_register()
+    #     self.btn_forgot_password()
 
     def background_image(self):
         # Créer un Canvas pour afficher l'image
@@ -129,7 +129,6 @@ class InterfaceLogin:
         else:
             messagebox.showerror("Échec de la connexion", "Identifiant ou mot de passe incorrect")
 
-
     # def open_main_interface(self):
     #     # Ajoutez le code pour ouvrir l'interface principale après la connexion réussie
     #     pass
@@ -138,70 +137,12 @@ class InterfaceLogin:
     def forgot_password(self):
         # Vous pouvez implémenter votre logique pour gérer les mots de passe oubliés ou les e-mails perdus ici
         messagebox.showinfo("Fonctionnalité non implémentée", "Désolé, cette fonctionnalité n'est pas encore disponible.")
+
 interfacelogin = InterfaceLogin()
+interfacelogin.background_image()
+interfacelogin.enter_email()
+interfacelogin.enter_password()
+interfacelogin.btn_login()
+interfacelogin.btn_register()
+interfacelogin.btn_forgot_password()
 interfacelogin.screen.mainloop()  # Démarrer la boucle principale après la création des widgets
-#app = VideoBackgroundApp(root, 'assets/etoiles.mp4')
-
-
-# import tkinter as tk
-# from Users import Users
-
-# class RegisterInterface:
-#     def __init__(self):
-#         self.root = tk.Tk()
-#         self.root.title("MyDiscord")
-#         self.root.geometry("600x800")
-        
-#         self.first_name_label = tk.Label(self.root, text="Prénom : ")
-#         self.first_name_entry = tk.Entry(self.root)
-#         #self.first_name_entry = Users.first_name
-#         self.last_name_label = tk.Label(self.root, text="Nom : ")
-#         self.last_name_entry = tk.Entry(self.root)
-#         #self.last_name_entry = Users.last_name
-#         self.email_label = tk.Label(self.root, text="Email : ")
-#         self.email_entry = tk.Entry(self.root)
-#         #self.email_entry = Users.email
-#         self.password_label = tk.Label(self.root, text="Mot de passe : ")
-#         self.password_entry = tk.Entry(self.root)
-#         #self.password_entry = Users.password
-#         # self.confirm_password_label = tk.Label(self.root, text="Confirmation mot de passe : ")
-#         # self.confirm_password_entry = tk.Entry(self.root, show="*")
-        
-#         self.register_button = tk.Button(self.root, text="Inscription", command=self.register_user)
-        
-#         self.first_name_label.grid(row=0, column=0)
-#         self.first_name_entry.grid(row=0, column=1)
-#         self.last_name_label.grid(row=1, column=0)
-#         self.last_name_entry.grid(row=1, column=1)
-#         self.email_label.grid(row=2, column=0)
-#         self.email_entry.grid(row=2, column=1)
-#         self.password_label.grid(row=5, column=0)
-#         self.password_entry.grid(row=5, column=1)
-#         # self.confirm_password_label.grid(row=6, column=0)
-#         # self.confirm_password_entry.grid(row=6, column=1)
-
-#         self.register_button.grid(row=7, column=1)
-        
-#         self.root.mainloop()
-    
-#     def register(self):
-#         first_name = self.first_name_entry.get()
-#         last_name = self.last_name_entry.get()
-#         email = self.email_entry.get()
-#         password = self.password_entry.get()
-#         #confirm_password = self.confirm_password_entry.get()
-        
-       
-#         self.register_user(first_name, last_name, email, password)
-
-#     def register_user(self):
-#         first_name = self.first_name_entry.get()
-#         last_name = self.last_name_entry.get()
-#         email = self.email_entry.get()
-#         password = self.password_entry.get()
-#         # Here you can add your logic to save the user to the database
-#         user = Users(first_name, last_name, email, password)
-#         print(f"Utilisateur {user.first_name} enregistré avec succès !")    
-
-# # Run the interface
-# app = RegisterInterface()

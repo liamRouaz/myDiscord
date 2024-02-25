@@ -5,13 +5,17 @@ from PIL import Image, ImageTk
 import tkinter as tk
 
 
-class SaloonInterface():
+class InterfaceSaloon():
     # fenetre
-    screen = tkinter.Tk()
-    screen.geometry("600x700")
-    screen.title("MyDiscord")
-    screen.resizable(False, False)
-    screen.configure(background="#343541")
+    def __init__(self, description_label):
+        self.screen = tkinter.Tk()
+        self.screen.geometry("600x700")
+        self.screen.title("MyDiscord")
+        self.screen.resizable(False, False)
+        self.screen.configure(background="#343541")
+        self.description_label = description_label
+        self.description_label = Label(self.screen, borderwidth = 8, relief = SUNKEN, background = "#343541", foreground = "#FFFAFA")
+        self.description_label.place(x=10, y=320, width=420, height=350)
 
     def title(self):
         title = Label(self.screen, borderwidth = 8, relief = SUNKEN,
@@ -21,38 +25,38 @@ class SaloonInterface():
 
     def change_screen_sport(self):
         self.screen.destroy()  # Fermer la première fenêtre
-        from src.SportInterface import ALL #import Interface_sport  # Importer le deuxième fichier
+        from InterfaceSport import ALL #import Interface_sport  # Importer le deuxième fichier
 
     def change_screen_manga(self):
         self.screen.destroy()
-        from src.MangaInterface import ALL
+        from InterfaceManga import ALL
 
     def change_screen_movie(self):
         self.screen.destroy()
-        from src.MovieInterface import ALL
-        
+        from InterfaceMovie import ALL
+
         # évènement de passage de souris sur les boutons 
-    def on_enter_manga(self, event):
+    def on_enter_manga(self):
         self.description_label.config(text=self.description_manga.get(1.0, "end"))
 
-    def on_leave_manga(self, event):
+    def on_leave_manga(self):
         self.description_label.config(text="")
 
-    def on_enter_cinema(self, event):
+    def on_enter_cinema(self):
         self.description_label.config(text=self.description_cinema.get(1.0, "end"))
 
-    def on_leave_cinema(self, event):
+    def on_leave_cinema(self):
         self.description_label.config(text="")
 
     def on_enter_spdescription_labelort(self, event):
         self.description_label.config(text=self.description_sport.get(1.0, "end"))
 
-    def on_leave_sport(self, event):
+    def on_leave_sport(self):
         self.description_label.config(text="")
 
-    def label_description(self,event):
-        self.description_label = Label(self.screen, borderwidth = 8, relief = SUNKEN, background = "#343541", foreground = "#FFFAFA")
-        self.description_label.place(x=10, y=320, width=420, height=350)
+    # def label_description(self):
+    #     self.description_label = Label(self.screen, borderwidth = 8, relief = SUNKEN, background = "#343541", foreground = "#FFFAFA")
+    #     self.description_label.place(x=10, y=320, width=420, height=350)
 
     def btn_sport(self):
         #  salon sport
@@ -71,6 +75,7 @@ class SaloonInterface():
         self.description_sport.insert(1.0, "Bienvenue dans notre salon de chat dédié aux sports ! \nQue vous soyez fan de football, de basketball, ou de tout autre sport, venez discuter des derniers matchs, partager des analyses, échanger des pronostics, ou tout simplement célébrer les performances des athlètes.")
         self.description_sport.place(x=10, y=320, width = 140, height = 350)
         saloon_interface.label_description()
+
     def btn_movie(self):
         #bouton salon cinéma
         self.image_bobine = Image.open("assets/logo_dvd.png")
@@ -112,7 +117,7 @@ class SaloonInterface():
         self.btn_deconnexion.place(x=10, y=10)
 
 
-saloon_interface = SaloonInterface()
+saloon_interface = InterfaceSaloon(description_label)
 saloon_interface.btn_sport()
 saloon_interface.btn_movie()
 saloon_interface.btn_manga()

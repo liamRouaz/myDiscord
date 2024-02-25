@@ -4,7 +4,7 @@ from tkinter import *
 from PIL import Image, ImageTk
 import tkinter as tk
 
-class SportInterface():
+class InterfaceSport():
     # fenetre
     def __init__(self):
         self.screen = tk.Tk()
@@ -47,15 +47,15 @@ class SportInterface():
 
     def change_screen_sport(self):
         self.screen.destroy()  # Fermer la première fenêtre
-        from src.SportInterface import ALL #import Interface_sport  # Importer le deuxième fichier
+        from InterfaceSport import ALL #import Interface_sport  # Importer le deuxième fichier
 
     def change_screen_manga(self):
         self.screen.destroy()
-        from src.MangaInterface import ALL
+        from InterfaceManga import ALL
 
     def change_screen_movie(self):
         self.screen.destroy()
-        from src.MovieInterface import ALL
+        from InterfaceMovie import ALL
 
     def btn_send(self):
         # bouton envoyer
@@ -92,7 +92,7 @@ class SportInterface():
         btn_deconnexion.place(x=30, y=10)
 
 
-sport_interface = SportInterface()
+sport_interface = InterfaceSport()
 sport_interface.background_image()
 sport_interface.ajouter_titre()
 sport_interface.column_saloon()
