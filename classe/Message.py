@@ -42,3 +42,4 @@ class Message:
         params = (self.user_id, self.content, self.timestamp, self.channel_id, self.message_type)
         self.server.execute_query(query, params)
 
+

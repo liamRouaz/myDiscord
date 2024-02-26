@@ -62,9 +62,9 @@ class ChatClient:
 
             # Démarrer la boucle pour l'envoi de messages
             self.send_messages()
+            # self.start()
         except Exception as e:
             print("Error:", e)
-
 
     def close_connection(self):
         try:

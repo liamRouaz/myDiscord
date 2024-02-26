@@ -68,12 +68,12 @@ class InterfaceLogin:
         password = self.entry_password.get()
         # Authentifier l'utilisateur avec le serveur
         user_id = self.chat_server.authenticate_user(email, password)
-        print(user_id)
 
         if user_id is not None:
             messagebox.showinfo("Connexion réussie", f"Bienvenue, {email} !")
             # Connectez le client au serveur après la validation des identifiants
             self.chat_client.connect_to_server(email, password, user_id)  # Fournir également l'identifiant de l'utilisateur
+            self.chat_client.start() 
             # Fermez l'interface après la connexion
             self.screen.destroy()
         else:

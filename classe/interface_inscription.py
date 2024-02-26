@@ -55,7 +55,7 @@ class InterfaceInscription:
             "password": password
         }
 
-        user = Users('first_name', 'last_name', 'email', 'password', 'localhost', 8585)
+        user = Users(first_name, last_name, email, password, 'localhost', 8585)
         user.register_user(**user_info)  # Utilisation de l'opérateur ** pour déballer le dictionnaire
 
     def register(self):
@@ -64,3 +64,5 @@ class InterfaceInscription:
 # Run the interface
 server = ChatServeur("localhost", 8585)  # Assuming you have a ChatServeur class
 app = InterfaceInscription(server)
+
+

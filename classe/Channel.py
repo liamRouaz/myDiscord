@@ -18,9 +18,9 @@ class Channel:
     @staticmethod
     def create_channels():
         # Créer des canaux
-        ChatServeur().insert_channel("sport", is_public=True)
-        ChatServeur().insert_channel("cinéma", is_public=True)
-        ChatServeur().insert_channel("manga", is_public=True)
+        ChatServeur().insert_channel("sport", "public") # Si sa marche pas remétre is_public=True
+        ChatServeur().insert_channel("cinéma", "public")
+        ChatServeur().insert_channel("manga", "public")
 
     @staticmethod
     def get_channels():
@@ -32,7 +32,7 @@ class Channel:
     def get_messages(self):
         return self.messages
 
-    def save_to_server(self):  # Assurez-vous d'appeler la méthode execute_query de la classe ChatServeur
+    def save_to_server(self): 
         query = "INSERT INTO channels (name, is_public) VALUES (%s, %s)"
         params = (self.name, self.is_public)
         self.server.execute_query(query, params)
