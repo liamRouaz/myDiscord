@@ -272,13 +272,8 @@ class ChatServeur:
         query = "INSERT INTO messages (author, content, timestamp, channel_id) VALUES (%s, %s, %s, %s)"
         params = (author, content, timestamp, channel_id)
         try:
-            with self.db.get_connection() as connection:
-                cursor = connection.cursor()
-                cursor.execute(query, params)
-                message_id = cursor.lastrowid
-                connection.commit()
-                cursor.close()
-                return message_id
+            permission_id = self.db.execute_query(query, params)  # Utilisez la méthode execute_query de Database
+            return permission_id
         except mysql.connector.Error as err:
             print("Error inserting message into database:", err)
             return None
@@ -286,35 +281,35 @@ class ChatServeur:
     def authenticate_user(self, email, password):
         query = "SELECT first_name FROM users WHERE email = %s AND password = %s"
         params = (email, password)
-        result = self.fetch_data(query, params)
+        result = self.db.fetch_data(query, params)  # Utilisez la méthode fetch_data de Database
         return result[0][0] if result else None
     
-    def execute_query(self, query, params):
-        with self.db.get_connection() as connection:
-            cursor = connection.cursor()
-            try:
-                cursor.execute(query, params)
-                if query.strip().upper().startswith('INSERT'):
-                    return cursor.lastrowid
-                connection.commit()
-            except mysql.connector.Error as err:
-                print("Error executing query:", err)
-                raise
-            finally:
-                cursor.close()
+    # def execute_query(self, query, params):
+    #     with self.db.get_connection() as connection:
+    #         cursor = connection.cursor()
+    #         try:
+    #             cursor.execute(query, params)
+    #             if query.strip().upper().startswith('INSERT'):
+    #                 return cursor.lastrowid
+    #             connection.commit()
+    #         except mysql.connector.Error as err:
+    #             print("Error executing query:", err)
+    #             raise
+    #         finally:
+    #             cursor.close()
 
-    def fetch_data(self, query, params=None):
-        with self.db.get_connection() as connection:
-            cursor = connection.cursor()
-            try:
-                cursor.execute(query, params)
-                result = cursor.fetchall()
-                return result
-            except mysql.connector.Error as err:
-                print("Error fetching data:", err)
-                raise
-            finally:
-                cursor.close()
+    # def fetch_data(self, query, params=None):
+    #     with self.db.get_connection() as connection:
+    #         cursor = connection.cursor()
+    #         try:
+    #             cursor.execute(query, params)
+    #             result = cursor.fetchall()
+    #             return result
+    #         except mysql.connector.Error as err:
+    #             print("Error fetching data:", err)
+    #             raise
+    #         finally:
+    #             cursor.close()
 
     def get_user_id(self, client_socket):
         for client in self.clients:

@@ -30,8 +30,35 @@ class Database:
             )
             return connection
         except mysql.connector.Error as err:
-            print(f"Erreur de connexion à MySQL: {err}")
-            return None
+            raise  # Propagez l'exception en cas d'erreur de connexion
+
+    def execute_query(self, query, params):
+        with self.get_connection() as connection:
+            cursor = connection.cursor()
+            try:
+                cursor.execute(query, params)
+                if query.strip().upper().startswith('INSERT'):
+                    return cursor.lastrowid
+                connection.commit()
+            except mysql.connector.Error as err:
+                print("Error executing query:", err)
+                raise
+            finally:
+                cursor.close()
+
+    def fetch_data(self, query, params=None):
+        with self.get_connection() as connection:
+            cursor = connection.cursor()
+            try:
+                cursor.execute(query, params)
+                result = cursor.fetchall()
+                return result
+            except mysql.connector.Error as err:
+                print("Error fetching data:", err)
+                raise
+            finally:
+                cursor.close()
+
 
 
 
