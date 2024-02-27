@@ -11,8 +11,8 @@ def start_client_after_login(email, password, host, port):
     client.connect_to_server(email, password)
 
 if __name__ == "__main__":
-    HOST = "localhost"
-    PORT = 8585
+    HOST = "10.10.94.117"
+    PORT = 5000
 
     # Créer une instance du client
     chat_client = ChatClient(HOST, PORT)

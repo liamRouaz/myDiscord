@@ -74,8 +74,8 @@ class ChatClient:
             print("Error:", e)
 
 if __name__ == "__main__":
-    HOST = 'localhost'
-    PORT = 8585
+    HOST = '10.10.94.117'
+    PORT = 5000
     client = ChatClient(HOST, PORT)
     client.connect_to_server()
 

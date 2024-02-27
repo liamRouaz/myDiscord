@@ -1,12 +1,12 @@
 from ChatServeur import ChatServeur
 
 class Channel:
-    def __init__(self, id, name, is_public):
+    def __init__(self,host, port, id, name, is_public):
         self.id = id
         self.name = name
         self.is_public = is_public
         self.messages = []
-        self.server = ChatServeur()
+        self.server = ChatServeur(host, port)
         
     def create_channel(self):
         self.server.insert_channel(self.name, self.is_public)

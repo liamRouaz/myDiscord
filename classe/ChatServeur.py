@@ -327,8 +327,8 @@ class ChatServeur:
         return None
 
 if __name__ == "__main__":
-    HOST = 'localhost'
-    PORT =   8585
+    HOST = '10.10.94.117'
+    PORT =   5000
     serveur = ChatServeur(HOST, PORT)
     serveur.start()
 
