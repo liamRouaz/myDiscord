@@ -12,7 +12,7 @@ def start_client_after_login(email, password, host, port):
 
 if __name__ == "__main__":
     # HOST = "10.10.94.117"
-    HOST = "localhost"
+    HOST = "10.10.98.90"
     PORT = 5000
 
     # Créer une instance du client

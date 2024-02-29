@@ -6,8 +6,8 @@ import threading
 
 class InterfaceLogin:
     def __init__(self):
-        self.chat_server = ChatServeur('localhost', 5000)                        #('10.10.94.117', 5000)
-        self.chat_client = ChatClient('localhost', 5000)                                             #('10.10.94.117', 5000)
+        self.chat_server = ChatServeur('10.10.98.90', 5000)                        #('10.10.94.117', 5000)
+        self.chat_client = ChatClient('10.10.98.90', 5000)                                             #('10.10.94.117', 5000)
         self.screen = tk.Tk()
         self.screen.title("MyDiscord")
         self.screen.geometry("600x700")

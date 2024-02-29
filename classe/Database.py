@@ -15,9 +15,9 @@ import mysql.connector
 
 class Database:
     def __init__(self):
-        self.host = "localhost"                          #"10.10.94.117"
-        self.user = "root"
-        self.password = "soso"
+        self.host = "10.10.98.90"                          #"10.10.94.117"
+        self.user = "test"
+        self.password = "test"
         self.database = "myDiscord"
 
     def get_connection(self):

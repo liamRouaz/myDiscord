@@ -189,6 +189,7 @@ import socket
 import threading
 from datetime import datetime
 import mysql.connector
+from Permissions import Permissions
 
 class ChatServeur:
     def __init__(self, host, port):
@@ -200,6 +201,7 @@ class ChatServeur:
         self.db = Database()
         self.channels = []
         self.sessions = {}  # Dictionnaire pour stocker les sessions des clients
+        self.permissions_manager = Permissions()
 
     def start(self):
         try:
@@ -251,6 +253,12 @@ class ChatServeur:
                 # Récupérer l'ID utilisateur et l'ID du canal
                 channel_id = self.get_channel_id(client_socket)
                 user_id = self.get_user_id(client_socket)
+
+                # Vérifier si l'utilisateur a la permission d'envoyer un message dans ce canal
+                # if not self.permissions_manager.check_permission(user_id, channel_id):
+                #     print("User does not have permission to send messages in this channel")
+                #     continue
+
                 # Insérer le message dans la base de données
                 message_id = self.insert_message(user_id, message, current_time, channel_id)
 
@@ -354,7 +362,7 @@ class ChatServeur:
         return None
 
 if __name__ == "__main__":
-    HOST = 'localhost'
+    HOST = '10.10.98.90'
     PORT = 5000
     serveur = ChatServeur(HOST, PORT)
     serveur.start()
