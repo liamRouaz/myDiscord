@@ -15,7 +15,7 @@ import mysql.connector
 
 class Database:
     def __init__(self):
-        self.host = "localhost"
+        self.host = "localhost"                          #"10.10.94.117"
         self.user = "root"
         self.password = "soso"
         self.database = "myDiscord"
@@ -46,7 +46,7 @@ class Database:
             finally:
                 cursor.close()
 
-    def fetch_data(self, query, params=None):
+    def fetch_data(self, query, params):
         with self.get_connection() as connection:
             cursor = connection.cursor()
             try:

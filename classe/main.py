@@ -7,11 +7,12 @@ def start_interface():
     interface.screen.mainloop()
 
 def start_client_after_login(email, password, host, port):
-    client = ChatClient(host, port)
-    client.connect_to_server(email, password)
+    chat_client = ChatClient(host, port)
+    chat_client.connect_to_server(email, password)
 
 if __name__ == "__main__":
-    HOST = "10.10.94.117"
+    # HOST = "10.10.94.117"
+    HOST = "localhost"
     PORT = 5000
 
     # Créer une instance du client

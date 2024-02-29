@@ -1,5 +1,5 @@
 from ChatServeur import ChatServeur
-
+from Database import Database
 class Message:
     TEXT_MESSAGE = "text"
     EMOJI_MESSAGE = "emoji"
@@ -7,6 +7,7 @@ class Message:
 
     def __init__(self, host, port, user_id, content, timestamp, channel_id, message_type=TEXT_MESSAGE):
         self.server = ChatServeur(host, port)
+        self.db = Database()
         self.user_id = user_id
         self.content = content
         self.timestamp = timestamp
@@ -41,9 +42,14 @@ class Message:
         return Message(user_id, content, timestamp, channel_id, message_type)
 
     def save_to_server(self):
-        query = "INSERT INTO messages (user_id, content, timestamp, channel_id, message_type) VALUES (%s, %s, %s, %s, %s)"
-        params = (self.user_id, self.content, self.timestamp, self.channel_id, self.message_type)
-        self.server.execute_query(query, params)
+        self.user_first_name = self.server.get_user_first_name(self.user_id)
+        if self.user_first_name is None:
+            print("Error: User not found for ID:", self.user_id)
+            return
+
+        query = "INSERT INTO messages (user_id, first_name, content, timestamp, channel_id, message_type) VALUES (%s, %s, %s, %s, %s, %s)"
+        params = (self.user_id, self.user_first_name, self.content, self.timestamp, self.channel_id, self.message_type)
+        self.server.db.execute_query(query, params)
 
 
 # from ChatServeur import ChatServeur

@@ -3,8 +3,8 @@ from Users import Users
 from ChatServeur import ChatServeur
 
 class InterfaceInscription:
-    def __init__(self, server):
-        self.server = server
+    def __init__(self, host, port):
+        self.server = ChatServeur(host, port)
         self.root = tk.Tk()
         self.root.title("Inscription")
         self.root.geometry("600x800")
@@ -20,7 +20,7 @@ class InterfaceInscription:
         self.confirm_password_label = tk.Label(self.root, text="Confirm Password:")
         self.confirm_password_entry = tk.Entry(self.root, show="*")
         
-        self.register_button = tk.Button(self.root, text="Inscription", command=self.register)
+        self.register_button = tk.Button(self.root, text="Inscription", command=self.register_user)
         
         self.first_name_label.grid(row=0, column=0)
         self.first_name_entry.grid(row=0, column=1)
@@ -55,15 +55,20 @@ class InterfaceInscription:
             "password": password
         }
 
-        user = Users(first_name, last_name, email, password, '10.10.94.117', 5000)
-        user.register_user(**user_info)  # Utilisation de l'opérateur ** pour déballer le dictionnaire
+        user = Users(HOST, PORT)
+        user.register_user(**user_info) # Utilisation de l'opérateur ** pour déballer le dictionnaire
 
-    def register(self):
+    def register_user(self):
         self.create_user()
 
-# Run the interface
-server = ChatServeur("10.10.94.117", 5000) 
-app = InterfaceInscription(server)
+if __name__ == "__main__":
+    HOST = 'localhost'
+    PORT = 5000
+    app = InterfaceInscription(HOST, PORT)
+
+
+
+
 
 
 # import tkinter as tk
