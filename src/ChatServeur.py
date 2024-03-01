@@ -1,189 +1,156 @@
+from Database import Database
 import socket
 import threading
 from datetime import datetime
 import mysql.connector
-from Database import Database
-#from Message import Message
+from Channel import Channel
 
-class ChatServeur():
+class ChatServeur:
     def __init__(self, host, port):
         self.host = host
         self.port = port
         self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.clients = []
+        self.clients = {}
+        self.clients_lock = threading.Lock()
         self.db = Database()
-        self.channels = []
-
-    def start(self):
-        self.server_socket.bind((self.host, self.port))
-        self.server_socket.listen(5)
-        print("Serveur started on {}:{}".format(self.host, self.port))
-
-        while True:
-            client_socket, client_address = self.server_socket.accept()
-            print("New connection from:", client_address)
-            client_handler = threading.Thread(target=self.handle_client, args=(client_socket,))
-            client_handler.start()
-
+        self.channels = Channel.get_channels()
+        self.sessions = {}  # Dictionnaire pour stocker les sessions des clients
     
-    def handle_client(self, client_socket):
-        self.clients.append(client_socket)
-        message = ""
+    def start(self):
+        try:
+            self.server_socket.bind((self.host, self.port))
+            self.server_socket.listen(20)
+            print("Serveur started on {}:{}".format(self.host, self.port))
 
-        while True:
-            try:
-                data = client_socket.recv(1024).decode()
-                if not data:
-                    print("Received:", data)
+            while True:
+                client_socket, client_address = self.server_socket.accept()
+                client_ip = client_address[0]
+                print("New connection from:", client_ip)
+                client_handler = threading.Thread(target=self.handle_client, args=(client_socket,))
+                client_handler.start()
+        except OSError as os_err:
+            print("Error starting server:", os_err)
+
+    def handle_client(self, client_socket):
+        try:
+            credentials_and_id = client_socket.recv(1024).decode()
+            if ":" not in credentials_and_id:
+                print("Invalid format for credentials and user ID")
+                client_socket.send("Invalid format".encode("utf-8"))
+                client_socket.close()
+                return
+            email, password, user_id = credentials_and_id.split(":")
+            email, password, user_id = self.authenticate_user(email, password)
+            if not email or not password or not user_id:
+                print("Authentication failed for user:", user_id)
+                client_socket.send("Authentication failed".encode("utf-8"))
+                client_socket.close()
+                return
+            print("User connected:", user_id)
+            client_socket.send("AUTH_SUCCESS".encode("utf-8"))
+
+            # Demander à l'utilisateur de choisir un canal
+            client_socket.send("Choose a channel:".encode("utf-8"))
+            # Attendre la réponse de l'utilisateur
+            channel_choice = client_socket.recv(1024).decode().strip()
+
+            # Associe le client au canal choisi
+            channel_id = self.get_channel_id_by_name(channel_choice)
+            self.clients[client_socket] = channel_id
+
+            with self.clients_lock:
+                self.sessions[user_id] = client_socket
+
+            while True:
+                message = client_socket.recv(1024).decode()
+                if not message:
                     break
 
-                # Ajoutez les données reçues à votre message
-                message += data
+                current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                if message == "/quit":
+                    self.disconnect_client(client_socket)
+                    break
 
-                # Vérifiez si le message se termine par "/end"
-                if message.endswith("/end"):
-                    message = message.replace("/end", "")  # Supprimez l'indicateur de fin de message
-                    current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                # Récupérer l'ID utilisateur et l'ID du canal
+                channel_id = self.clients[client_socket]
+                user_id = user_id
 
-                    channel_id = self.get_channel_id(client_socket)
-                    user_id = self.get_user_id(client_socket)
+                # Insérer le message dans la base de données
+                message_id = self.insert_message(user_id, message, current_time, channel_id)
 
-                    # Créez un message avec les données reçues
-                    message_instance = Message(self, user_id, message, current_time, channel_id)
-                    message_instance.send_message()
+                if message_id:
+                    formatted_message = f"{user_id}: {message}"
+                    self.broadcast(formatted_message, client_socket)
+                else:
+                    print("Error inserting message into database")
+                    client_socket.send("Error inserting message".encode("utf-8"))
+        except Exception as e:
+            print("Error:", e)
+            client_socket.send("Internal server error".encode("utf-8"))
+            client_socket.close()
+            self.disconnect_client(client_socket)
 
-                    for channel in self.channels:
-                        if channel.id == channel_id and (channel.is_public or not channel.is_public and self.users.is_permis_channel(channel)):
-                            channel.add_message(message_instance)
+    def disconnect_client(self, client_socket):
+        if client_socket in self.clients:
+            client_socket.close()
+            del self.clients[client_socket]
+            # Supprimer le client de la session s'il existe
+            user_id = self.get_user_id(client_socket)
+            if user_id in self.sessions:
+                del self.sessions[user_id]
 
-                    self.broadcast(message, client_socket)
+    def broadcast(self, message, client_socket):
+        for client in list(self.clients.keys()):
+            if client != client_socket and client.fileno() != -1:
+                try:
+                    client.send(message.encode())
+                except socket.error:
+                    print("Client disconnected")
+                    del self.clients[client]
 
-                    # Réinitialisez le message pour les prochains messages
-                    message = ""
+    def insert_message(self, author_id, content, timestamp, channel_id):
+        user_first_name = self.get_user_first_name(author_id)
+        if user_first_name is None:
+            print("Error: User not found for ID:", author_id)
+            return None
 
-            except Exception as e:
-                print("Error:", e)
-                break
-
-        # Gérer la déconnexion du client
-        self.disconnect_client(client_socket)
-
-
-    # def authenticate_user(self, email, password):
-    #     connection = self.db.get_connection()
-    #     cursor = connection.cursor()
-    #     query = "SELECT id FROM users WHERE email = %s AND password = %s"
-    #     params = (email, password)
-    #     cursor.execute(query, params)
-    #     result = cursor.fetchone()
-    #     cursor.close()
-    #     return result[0] if result else None
+        query = "INSERT INTO messages (author, content, timestamp, channel_id) VALUES (%s, %s, %s, %s)"
+        params = (user_first_name, content, timestamp, channel_id)
+        try:
+            with self.db.get_connection() as connection:
+                cursor = connection.cursor()
+                cursor.execute(query, params)
+                message_id = cursor.lastrowid
+                connection.commit()
+                cursor.close()
+                return message_id
+        except mysql.connector.Error as err:
+            print("Error inserting message into database:", err)
+            return None
 
     def authenticate_user(self, email, password):
         query = "SELECT id FROM users WHERE email = %s AND password = %s"
         params = (email, password)
-        result = self.fetch_data(query, params)
+        result = self.db.fetch_data(query, params)
+        
+        # Récupére tous les user_id correspondant aux informations d'identification fournies
+        user_ids = [row[0] for row in result] if result else []
+        return email, password, user_ids[0] if user_ids else None
+
+    def get_user_first_name(self, user_id):
+        query = "SELECT first_name FROM users WHERE id = %s"
+        params = (user_id,)
+        result = self.db.fetch_data(query, params)
         return result[0][0] if result else None
-   
-    
-    def execute_query(self, query, params=None):
-        connection = self.db.get_connection()
-        cursor = connection.cursor()
-        try:
-            cursor.execute(query, params)
-            if params is not None:
-                connection.commit()
-            if query.strip().upper().startswith('INSERT'):
-                return cursor.lastrowid
-        except mysql.connector.Error as err:
-            print("Error executing query:", err)
-            raise
-        finally:
-            cursor.close()
 
-    def fetch_data(self, query, params=None):
-        connection = self.db.get_connection()
-        cursor = connection.cursor()
-        try:
-            cursor.execute(query, params)
-            result = cursor.fetchall()
-            return result
-        except mysql.connector.Error as err:
-            print("Error fetching data:", err)
-            raise
-        finally:
-            cursor.close()
+    def get_channel_id_by_name(self, channel_name):
+        for channel in self.channels:
+            if channel.name == channel_name:
+                return channel.id
+        return None
 
-    def insert_message(self, user_id, content, timestamp, channel_id):
-        query = "INSERT INTO messages (author, content, timestamp, channel_id) VALUES (%s, %s, %s, %s)"
-        params = (user_id, content, timestamp, channel_id)
-        self.execute_query(query, params)
-
-    def insert_channel(self, name, is_public):
-        query = "INSERT INTO channels (name, is_public) VALUES (%s, %s)"
-        params = (name, is_public)
-        self.execute_query(query, params)   
-
-    def insert_user(self, first_name, last_name, email, password):
-        query = "INSERT INTO users (first_name, last_name, email, password) VALUES (%s, %s, %s, %s)"
-        params = (first_name, last_name, email, password)
-        self.execute_query(query, params)
-
-    def get_channels(self):
-        query = "SELECT * FROM channels"
-        return self.fetch_data(query)
-
-    def get_users(self):
-        query = "SELECT * FROM users"
-        return self.fetch_data(query)
-
-    def get_messages_for_channel(self, channel_id):
-        query = "SELECT * FROM messages WHERE channel_id = %s"
-        params = (channel_id,)
-        return self.fetch_data(query, params)
-
-    def get_reactions_for_message(self, message_id):
-        query = "SELECT * FROM reactions WHERE message_id = %s"
-        params = (message_id,)
-        return self.fetch_data(query, params)
-
-    def register_user(self, first_name, last_name, email, password):
-        return self.register_user(first_name, last_name, email, password)        
-
-    def broadcast(self, message, client_socket):
-        for client in self.clients:
-            if client != client_socket and client.fileno() != -1:
-                try:
-                    client.sendall(message.encode())
-                except Exception as e:
-                    print("Error:", e)
-
-    def get_user_id(self, client_socket):
-        user_id = None
-        if hasattr(client_socket, 'user_id'):
-            user_id = client_socket.user_id
-        return user_id
-
-    def get_channel_id(self, client_socket):
-        channel_id = None
-        if hasattr(client_socket, 'channel_id'):
-            channel_id = client_socket.channel_id
-        return channel_id
-
-    def disconnect_client(self, client_socket):
-        try:
-            client_socket.close()
-            print("Client disconnected.")
-            if self.users and self.users.id == client_socket.user_id:
-                self.users = None
-        except Exception as e:
-            print("Error occurred while disconnecting client:", e)
-
-
-    # Retirez le client de la liste des clients
-        self.clients.remove(client_socket)
-
-
-
-
-
+if __name__ == "__main__":
+    HOST = '10.10.100.103'
+    PORT = 5000
+    serveur = ChatServeur(HOST, PORT)
+    serveur.start()
