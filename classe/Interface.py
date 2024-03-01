@@ -6,8 +6,8 @@ import threading
 
 class InterfaceLogin:
     def __init__(self):
-        self.chat_server = ChatServeur('10.10.98.90', 5000)                        #('10.10.94.117', 5000)
-        self.chat_client = ChatClient('10.10.98.90', 5000)                                             #('10.10.94.117', 5000)
+        self.chat_server = ChatServeur('10.10.100.103', 5000)                        #('10.10.94.117', 5000)
+        self.chat_client = ChatClient('10.10.100.103', 5000)                                             #('10.10.94.117', 5000)
         self.screen = tk.Tk()
         self.screen.title("MyDiscord")
         self.screen.geometry("600x700")
@@ -78,20 +78,6 @@ class InterfaceLogin:
             self.screen.destroy()
         else:
             messagebox.showerror("Échec de la connexion", "Identifiant ou mot de passe incorrect")
-    # def validate_login(self):
-    #     email = self.entry_email.get()
-    #     password = self.entry_password.get()
-    #     user_id = self.chat_server.authenticate_user(email, password)
-
-    #     if user_id is not None:
-    #         messagebox.showinfo("Connexion réussie", f"Bienvenue, {email} !")
-    #         # Démarrer le ChatClient dans un thread séparé
-    #         client_thread = threading.Thread(target=self.start_chat_client, args=(email, password, user_id))
-    #         client_thread.start()
-    #         # Fermez l'interface après la connexion
-    #         self.screen.destroy()
-    #     else:
-    #         messagebox.showerror("Échec de la connexion", "Identifiant ou mot de passe incorrect")
 
     def start_chat_client(self, email, password, user_id):
         self.chat_client.connect_to_server(email, password, user_id)

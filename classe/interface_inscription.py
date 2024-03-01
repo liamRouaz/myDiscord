@@ -1,14 +1,12 @@
 import tkinter as tk
 from Users import Users
-from ChatServeur import ChatServeur
 
 class InterfaceInscription:
-    def __init__(self, host, port):
-        self.server = ChatServeur(host, port)
+    def __init__(self):
         self.root = tk.Tk()
         self.root.title("Inscription")
         self.root.geometry("600x800")
-        
+
         self.first_name_label = tk.Label(self.root, text="First Name:")
         self.first_name_entry = tk.Entry(self.root)
         self.last_name_label = tk.Label(self.root, text="Last Name:")
@@ -19,9 +17,9 @@ class InterfaceInscription:
         self.password_entry = tk.Entry(self.root, show="*")
         self.confirm_password_label = tk.Label(self.root, text="Confirm Password:")
         self.confirm_password_entry = tk.Entry(self.root, show="*")
-        
+
         self.register_button = tk.Button(self.root, text="Inscription", command=self.register_user)
-        
+
         self.first_name_label.grid(row=0, column=0)
         self.first_name_entry.grid(row=0, column=1)
         self.last_name_label.grid(row=1, column=0)
@@ -34,16 +32,16 @@ class InterfaceInscription:
         self.confirm_password_entry.grid(row=4, column=1)
 
         self.register_button.grid(row=5, column=1)
-        
+
         self.root.mainloop()
-    
+
     def create_user(self):
         first_name = self.first_name_entry.get()
         last_name = self.last_name_entry.get()
         email = self.email_entry.get()
         password = self.password_entry.get()
         confirm_password = self.confirm_password_entry.get()
-        
+
         if password != confirm_password:
             print("Password confirmation does not match")
             return
@@ -54,19 +52,93 @@ class InterfaceInscription:
             "email": email,
             "password": password
         }
-
-        user = Users(HOST, PORT)
-        user.register_user(**user_info) # Utilisation de l'opérateur ** pour déballer le dictionnaire
+        user = Users()
+        user.create_user(**user_info)
 
     def register_user(self):
         self.create_user()
 
 if __name__ == "__main__":
-    HOST = 'localhost'
+    HOST = '10.10.100.103'
     PORT = 5000
-    app = InterfaceInscription(HOST, PORT)
+    app = InterfaceInscription()
 
 
+
+
+
+
+
+
+# import tkinter as tk
+# from Users import Users
+# from ChatServeur import ChatServeur
+# from Database import Database
+# class InterfaceInscription:
+#     def __init__(self, host, port):
+#         self.host = host  
+#         self.port = port  
+#         self.db = Database()
+#         self.server = ChatServeur(host, port)
+#         self.root = tk.Tk()
+#         self.root.title("Inscription")
+#         self.root.geometry("600x800")
+        
+#         self.first_name_label = tk.Label(self.root, text="First Name:")
+#         self.first_name_entry = tk.Entry(self.root)
+#         self.last_name_label = tk.Label(self.root, text="Last Name:")
+#         self.last_name_entry = tk.Entry(self.root)
+#         self.email_label = tk.Label(self.root, text="Email:")
+#         self.email_entry = tk.Entry(self.root)
+#         self.password_label = tk.Label(self.root, text="Password:")
+#         self.password_entry = tk.Entry(self.root, show="*")
+#         self.confirm_password_label = tk.Label(self.root, text="Confirm Password:")
+#         self.confirm_password_entry = tk.Entry(self.root, show="*")
+        
+#         self.register_button = tk.Button(self.root, text="Inscription", command=self.register_user)
+        
+#         self.first_name_label.grid(row=0, column=0)
+#         self.first_name_entry.grid(row=0, column=1)
+#         self.last_name_label.grid(row=1, column=0)
+#         self.last_name_entry.grid(row=1, column=1)
+#         self.email_label.grid(row=2, column=0)
+#         self.email_entry.grid(row=2, column=1)
+#         self.password_label.grid(row=3, column=0)
+#         self.password_entry.grid(row=3, column=1)
+#         self.confirm_password_label.grid(row=4, column=0)
+#         self.confirm_password_entry.grid(row=4, column=1)
+
+#         self.register_button.grid(row=5, column=1)
+        
+#         self.root.mainloop()
+    
+#     def create_user(self):
+#         first_name = self.first_name_entry.get()
+#         last_name = self.last_name_entry.get()
+#         email = self.email_entry.get()
+#         password = self.password_entry.get()
+#         confirm_password = self.confirm_password_entry.get()
+
+#         if password != confirm_password:
+#             print("Password confirmation does not match")
+#             return
+
+#         user_info = {
+#             "first_name": first_name,
+#             "last_name": last_name,
+#             "email": email,
+#             "password": password
+#         }
+#         user = Users(self.host, self.port)
+#         user.register_user(user_info)  # Utilisation de l'opérateur ** pour déballer le dictionnaire
+
+#     def register_user(self):
+#         self.create_user()  
+
+# if __name__ == "__main__":
+#     HOST = '10.10.98.90'
+#     PORT = 5000
+#     app = InterfaceInscription(HOST, PORT)
 
 
 

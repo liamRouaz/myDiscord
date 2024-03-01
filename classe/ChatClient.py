@@ -179,7 +179,7 @@ class ChatClient:
 
 if __name__ == "__main__":
     # HOST = '10.10.94.117'
-    HOST = "10.10.98.90"
+    HOST = "10.10.100.103"
     PORT = 5000
     client = ChatClient(HOST, PORT)
     client.connect_to_server()
