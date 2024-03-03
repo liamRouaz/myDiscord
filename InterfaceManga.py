@@ -1,260 +1,76 @@
-from tkinter import Label, SUNKEN
-import tkinter
-from tkinter import *
-from PIL import Image, ImageTk
 import tkinter as tk
+from tkinter import ttk, Canvas, Listbox
+from datetime import datetime
+from PIL import Image, ImageTk
+#Pour connecter les interface 
+#from interface_connexion import InterfaceConnexion  # Import de l'interface de connexion
 
-class InterfaceManga():
-    # fenetre
-    def __init__(self):
-        self.screen = tk.Tk()
-        self.screen.geometry("600x700")
-        self.screen.title("MyDiscord")
-        self.screen.resizable(False, False)
-        #fenetre.configure(background="#343541")
-        
-        
-    def background_image(self):
-        # Créer un Canvas pour afficher l'image
-        canvas = tk.Canvas(self.screen, width=600, height=700)
-        canvas.pack()
+class ChatApp:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Chat App")
+        self.root.geometry("600x400")
 
-        # Charger l'image et l'afficher dans le Canvas
-        self.image_background = Image.open("assets/background_manga.png")
-        self.image_background = self.image_background.resize((600,  1000), Image.LANCZOS)  # Redimensionner l'image à la taille souhaitée
-        self.photo_background = ImageTk.PhotoImage(self.image_background)  # Store the image object as an instance variable
-        canvas.create_image(62,  50, anchor=tk.NW, image=self.photo_background)  # Use the instance variable here
+        # Création de la liste des canaux
+        self.channel_list = Listbox(self.root)
+        self.channel_list.pack(side="left", fill="y")
+        self.channel_list.insert(1, "General 💬")  # Canal général
+        self.channel_list.insert(2, "Movie 📀")    # Canal de film
+        self.channel_list.insert(3, "Sport 🏓")    # Canal de sport
+        self.channel_list.insert(4, "Manga 📖")    # Canal de manga
+        self.channel_list.bind("<<ListboxSelect>>", self.select_channel)
 
-    def add_title(self):
-        # Charger l'image à utiliser comme arrière-plan du titre
-        image_title = Image.open("assets/cieletoiles1.png")  # Assurez-vous que le format de l'image prend en charge la transparence (PNG)
-        photo_title = ImageTk.PhotoImage(image_title)
+        # Création de la liste des messages
+        self.message_list = tk.Text(self.root, wrap="word")
+        self.message_list.pack(side="top", fill="both", expand=True)
 
-        # Créer un canevas pour afficher l'image en arrière-plan
-        canvas = Canvas(self.screen, borderwidth=0, highlightthickness=0, background="#343541", width=600, height=50)
-        canvas.place(x=0, y=0)
+        # Frame pour le champ de saisie et le bouton d'envoi
+        text_channel_frame = ttk.Frame(self.root)
+        text_channel_frame.pack(side="bottom", fill="x")
 
-        # Ajouter l'image en arrière-plan du canevas
-        canvas.create_image(0, 0, anchor=tk.NW, image=photo_title)
+        # Champ de saisie pour le message
+        self.message_entry = tk.Entry(text_channel_frame, width=30)
+        self.message_entry.pack(side=tk.LEFT, padx=5, pady=5, fill=tk.X, expand=True)
 
-        # Ajouter le texte sur le canevas avec un fond transparent
-        canvas.create_text(200, 5, anchor=tk.NW, text="SALON MANGA", fill="#AC66FB", font=("ROGFonts-Regular", 25))
+        # Bouton pour envoyer les messages
+        send_button = tk.Button(text_channel_frame, text="Send", command=self.send_message)
+        send_button.pack(side=tk.RIGHT, padx=5, pady=5)
 
-        # Rafraîchir le canevas pour afficher les changements
-        canvas.update()
+        # Bouton pour quitter
+        quit_button = tk.Button(text_channel_frame, text="Quit", command=self.quit_app)
+        quit_button.pack(side=tk.RIGHT, padx=5, pady=5)
 
-        # Gardez une référence à l'image pour éviter la garbage collection
-        canvas.image = photo_title
+    def send_message(self):
+        message = self.message_entry.get()
+        self.message_entry.delete(0, tk.END)
+        if message:
+            self.display_message("You", message, sent=True)
 
-    def column_saloon(self):
-        # Charger l'image à utiliser comme arrière-plan
-        image = Image.open("assets/cieletoiles1.png")  # Assurez-vous que le format de l'image prend en charge la transparence (PNG)
-        photo = ImageTk.PhotoImage(image)
+    def display_message(self, user, message, sent=False):
+        timestamp = datetime.now().strftime("%H:%M:%S")
+        date = datetime.now().strftime("%Y-%m-%d")
+        formatted_message = f"[{date} {timestamp}] {user}: {message}\n"
+        tag = "sent" if sent else "received"
+        self.message_list.insert(tk.END, formatted_message)
+        self.message_list.see(tk.END)
 
-        # Créer le canevas avec l'image en arrière-plan
-        canvas = Canvas(self.screen, borderwidth=0, highlightthickness=0, background="#343541", width=160, height=650)
-        canvas.place(x=0, y=50)
+    def select_channel(self, event=None):
+        selected_channel = self.channel_list.get(self.channel_list.curselection())
+        self.message_list.delete(1.0, tk.END)
+        self.display_message("System", f"You're now in {selected_channel} channel.")
 
-        # Ajouter l'image en arrière-plan du canevas
-        canvas.create_image(0, 0, anchor=tk.NW, image=photo)
+    def receive_messages(self):
+        # Placeholder: logique pour simuler la réception de messages
+        messages = [("Sender", "Sample message")]
+        for sender, message in messages:
+            self.display_message(sender, message)
+        # Planifier le prochain appel à receive_messages après un délai aléatoire
 
-        # Ajouter le texte sur le canevas avec un fond transparent
-        canvas.create_text(10, 10, anchor=tk.NW, text="Salons disponibles", fill="#BC1A86", font=("ROGFonts-Regular", 7))
+    def quit_app(self):
+        self.root.destroy()  # Ferme la fenêtre principale
+        #InterfaceConnexion()  # Lance l'interface de connexion
 
-        # Rafraîchir le canevas pour afficher les changements
-        canvas.update()
-
-        # Gardez une référence à l'image pour éviter la garbage collection
-        canvas.image = photo
-
-    # def column_saloon(self):
-    #     # Charger l'image à utiliser comme arrière-plan
-    #     image_column = Image.open("assets/cieletoiles1.png")
-    #     photo_column = ImageTk.PhotoImage(image_column)
-
-    #     # Créer le label avec l'image en arrière-plan
-    #     colonne = Label(self.screen, borderwidth=8, relief=SUNKEN,
-    #                     text="Salons disponibles", font=("ROGFonts-Regular", 7),
-    #                     background="#000000", foreground="#FFFAFA", image=photo_column, compound=tk.CENTER)
-    #     colonne.image = photo_column  # Conserver une référence à l'image pour éviter la garbage collection
-    #     colonne.place(x=0, y=50, width=160, height=650)
-    #     colonne.config(anchor=tk.NW)
-
-    # def column_saloon(self):
-    #     # ajout colonne de gauche
-    #     colonne = Label(self.screen, borderwidth = 8, relief = SUNKEN,
-    #                     text = "Salons disponibles", font = ("ROGFonts-Regular", 7),
-    #                     background = "#000000", foreground = "#FFFAFA")
-    #     colonne.place(x=0, y=50, width=160, height=650)
-    #     colonne.config(anchor=tk.NW)
-
-    def input_text(self):
-        # case de saisie de texte
-        text_input=Text(self.screen, width=40, height=5, relief=SUNKEN, background="#212121", foreground="white", font=("Comic sans MS", 10))
-        text_input.place(x=180, y=600)
-
-    def change_screen_sport(self):
-        self.screen.destroy()  # Fermer la première fenêtre
-        from InterfaceSport import ALL #import Interface_sport  # Importer le deuxième fichier
-
-    def change_screen_manga(self):
-        self.screen.destroy()
-        from InterfaceManga import ALL
-
-    def change_screen_movie(self):
-        self.screen.destroy()
-        from InterfaceMovie import ALL
-
-    def btn_send(self):
-        # bouton envoyer
-        btn_envoyer = Button(self.screen, text="Envoyer", background="#BC1A86", font = ("ROGFonts-Regular", 8))
-        btn_envoyer.place(x=510, y=630)
-
-    def btn_sport(self):
-        # bouton salon sport
-        self.image_ballon = Image.open("assets/logo_sport.png")
-        self.image_ballon = self.image_ballon.resize((50, 50), Image.LANCZOS)
-        self.image_ballon = ImageTk.PhotoImage(self.image_ballon)
-        btn_canalsport = Button(self.screen, image=self.image_ballon, text="Sport", compound=tk.LEFT, font = ("ROGFonts-Regular", 10), foreground = "#61008E", width=130, anchor=tk.W, bg="black", command=self.change_screen_sport)
-        btn_canalsport.place(x=10, y=100)
-
-    def btn_movie(self):
-        #bouton salon cinéma
-        self.image_bobine = Image.open("assets/logo_dvd.png")
-        self.image_bobine = self.image_bobine.resize((50, 50), Image.LANCZOS)
-        self.image_bobine = ImageTk.PhotoImage(self.image_bobine)
-        btn_canalcinema = Button(self.screen, image=self.image_bobine, text="Cinema", compound=tk.LEFT, font = ("ROGFonts-Regular", 10), foreground = "#AC66FB", width=130, anchor=tk.W, bg="black", command=self.change_screen_movie)
-        btn_canalcinema.place(x=10, y=180)
-
-    def btn_manga(self):
-        # bouton salon manga
-        self.image_boule = Image.open("assets/logo_manga.png")
-        self.image_boule = self.image_boule.resize((50, 50),  Image.LANCZOS)
-        self.image_boule = ImageTk.PhotoImage(self.image_boule)
-        btn_canalmanga = Button(self.screen, image=self.image_boule, text="Manga", compound=tk.LEFT, font = ("ROGFonts-Regular", 10), foreground = "#BC1A86", width=130, anchor=tk.W, bg="black", command=self.change_screen_manga)
-        btn_canalmanga.place(x=10, y=260)
-
-    def btn_disconnect(self):
-        # bouton déconnexion
-        btn_deconnexion = Button(self.screen, text="Deconnexion", font = ("ROGFonts-Regular", 8), background="#BC1A86")
-        btn_deconnexion.place(x=20, y=10)
-
-
-interface_manga = InterfaceManga()
-interface_manga.background_image()
-interface_manga.add_title()
-interface_manga.column_saloon()
-interface_manga.input_text()
-interface_manga.btn_send()
-interface_manga.btn_sport()
-interface_manga.btn_movie()
-interface_manga.btn_manga()
-interface_manga.btn_disconnect()
-interface_manga.screen.mainloop() 
-
-# from tkinter import Label, SUNKEN
-# import tkinter
-# from tkinter import *
-# from PIL import Image, ImageTk
-# import tkinter as tk
-
-# class InterfaceManga():
-#     def __init__(self):        
-#         # fenetre
-#         self.screen = tkinter.Tk()
-#         self.screen.geometry("600x700")
-#         self.screen.title("MyDiscord")
-#         self.screen.resizable(False, False)
-#         #fenetre.configure(background="#343541")
-
-#     def background_image(self):
-#         # Créer un Canvas pour afficher l'image
-#         canvas = tk.Canvas(self.screen, width=600, height=700)
-#         canvas.pack()
-
-#         # Charger l'image et l'afficher dans le Canvas
-#         self.image_background = Image.open("assets/background_manga.png")
-#         self.image_background = self.image_background.resize((600,  1000), Image.LANCZOS)  # Redimensionner l'image à la taille souhaitée
-#         self.photo_background = ImageTk.PhotoImage(self.image_background)  # Store the image object as an instance variable
-#         canvas.create_image(62,  50, anchor=tk.NW, image=self.photo_background)  # Use the instance variable here
-
-#     def add_title(self):
-#         #ajouter le titre
-#         titre = Label(self.screen, borderwidth = 8, relief = SUNKEN,
-#                     text = "SALON MANGA", font = ("BOUCHERIE BLOC", 25),
-#                     background = "#000000", foreground = "#F77500")
-#         titre.place(x=0, y=0, width = 600, height = 50)
-
-#     def column_saloon(self):
-#         # ajout colonne de gauche
-#         colonne = Label(self.screen, borderwidth = 8, relief = SUNKEN,
-#                         text = "Salons disponibles", font = ("Bauhaus 93", 12),
-#                         background = "#000000", foreground = "#FFFAFA")
-#         colonne.place(x=0, y=50, width=160, height=650)
-#         colonne.config(anchor=tk.NW)
-
-#     def input_text(self):
-#         # case de saisie de texte
-#         text_input=Text(self.screen, width=40, height=5, relief=SUNKEN)
-#         text_input.place(x=180, y=600)
-
-#     def change_screen_sport(self):
-#         self.screen.destroy()  # Fermer la première fenêtre
-#         from InterfaceSport import ALL #import Interface_sport  # Importer le deuxième fichier
-
-#     def change_screen_manga(self):
-#         self.screen.destroy()
-#         from InterfaceManga import ALL
-
-#     def change_screen_movie(self):
-#         self.screen.destroy()
-#         from InterfaceMovie import ALL
-
-#     def btn_send(self):
-#         # bouton envoyer
-#         btn_envoyer = Button(self.screen, text="Envoyer")
-#         btn_envoyer.place(x=520, y=630)
-
-#     def btn_sport(self):
-#         # bouton salon sport
-#         self.image_ballon = Image.open("assets/logo_sport.png")
-#         self.image_ballon = self.image_ballon.resize((50, 50), Image.LANCZOS)
-#         self.image_ballon = ImageTk.PhotoImage(self.image_ballon)
-#         btn_canalsport = Button(self.screen, image=self.image_ballon, text="Sport", compound=tk.LEFT, font = ("Comic sans ms", 15), foreground = "#FFFAFA", width=130, anchor=tk.W, bg="black", command=self.change_screen_sport)
-#         btn_canalsport.place(x=10, y=100)
-
-#     def btn_movie(self):
-#         #bouton salon cinéma
-#         self.image_bobine = Image.open("assets/logo_dvd.png")
-#         self.image_bobine = self.image_bobine.resize((50, 50), Image.LANCZOS)
-#         self.image_bobine = ImageTk.PhotoImage(self.image_bobine)
-#         btn_canalcinema = Button(self.screen, image=self.image_bobine, text="Cinéma", compound=tk.LEFT, font = ("Comic sans ms", 15), foreground = "#FFFAFA", width=130, anchor=tk.W, bg="black", command=self.change_screen_movie)
-#         btn_canalcinema.place(x=10, y=180)
-
-#     def btn_manga(self):
-#         # bouton salon manga
-#         self.image_boule = Image.open("assets/logo_manga.png")
-#         self.image_boule = self.image_boule.resize((50, 50),  Image.LANCZOS)
-#         self.image_boule = ImageTk.PhotoImage(self.image_boule)
-#         btn_canalmanga = Button(self.screen, image=self.image_boule, text="Manga", compound=tk.LEFT, font = ("Comic sans ms", 15), foreground = "#FFFAFA", width=130, anchor=tk.W, bg="black", command=self.change_screen_manga)
-#         btn_canalmanga.place(x=10, y=260)
-
-#     def btn_disconnect(self):
-#         # bouton déconnexion
-#         btn_deconnexion = Button(self.screen, text="Déconnexion")
-#         btn_deconnexion.place(x=30, y=10)
-
-
-# manga_interface = InterfaceManga()
-# manga_interface.background_image()
-# manga_interface.add_title()
-# manga_interface.column_saloon()
-# manga_interface.input_text()
-# manga_interface.btn_send()
-# manga_interface.btn_sport()
-# manga_interface.btn_movie()
-# manga_interface.btn_manga()
-# manga_interface.btn_disconnect()
-
-
-# manga_interface.screen.mainloop() 
+if __name__ == "__main__":
+    root = tk.Tk()
+    app = ChatApp(root)
+    root.mainloop()
