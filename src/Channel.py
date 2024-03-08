@@ -13,11 +13,11 @@ class Channel:
         query = "SELECT * FROM channels"
         try:
             result = db.fetch_data(query, ())
-            channels = []
+            channels = {}
             for row in result:
                 id, name, is_public = row
                 channel = Channel(id, name, is_public)
-                channels.append(channel)
+                channels[name] = channel
             return channels
         except Exception as e:
             print("Error fetching channels:", e)
@@ -26,4 +26,12 @@ class Channel:
         self.messages.append(message)
 
     def get_messages(self):
-        return self.messages
+        try:
+            db = Database()
+            query = "SELECT content FROM messages WHERE channel_id = %s"
+            result = db.fetch_data(query, (self.id,))
+            messages = [row[0] for row in result]  # Fetching only content from database
+            return messages
+        except Exception as e:
+            print("Error fetching messages for channel:", e)
+            return []

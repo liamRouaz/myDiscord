@@ -1,9 +1,4 @@
 import tkinter as tk
-from tkinter import messagebox
-#from ChatServeur import ChatServeur
-#from ChatClient import ChatClient
-import cv2
-from PIL import Image, ImageTk
 from tkinter import *
 
 

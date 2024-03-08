@@ -1,5 +1,6 @@
 from ChatServeur import ChatServeur
 from Database import Database
+
 class Message:
     TEXT_MESSAGE = "text"
     EMOJI_MESSAGE = "emoji"

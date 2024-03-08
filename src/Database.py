@@ -2,7 +2,7 @@ import mysql.connector
 
 class Database:
     def __init__(self):
-        self.host = "10.10.100.103"
+        self.host = "10.10.0.38"
         self.user = "test"
         self.password = "test"
         self.database = "myDiscord"

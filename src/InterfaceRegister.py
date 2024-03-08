@@ -1,7 +1,4 @@
 import tkinter as tk
-from tkinter import messagebox
-import cv2
-from PIL import Image, ImageTk
 from Users import Users
 
 
@@ -100,7 +97,7 @@ class InterfaceRegister():
         self.create_user()
 
 if __name__ == "__main__":
-    HOST = '10.10.100.103'
+    HOST = '10.10.0.38'
     PORT = 5000
     #app = InterfaceRegister()
 

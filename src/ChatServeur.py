@@ -33,7 +33,8 @@ class ChatServeur:
 
     def handle_client(self, client_socket):
         try:
-            credentials_and_id = client_socket.recv(1024).decode()
+            credentials_and_id = client_socket.recv(1024)
+            credentials_and_id = credentials_and_id.decode()  # Décodez les données reçues
             if ":" not in credentials_and_id:
                 print("Invalid format for credentials and user ID")
                 client_socket.send("Invalid format".encode("utf-8"))
@@ -49,17 +50,17 @@ class ChatServeur:
             print("User connected:", user_id)
             client_socket.send("AUTH_SUCCESS".encode("utf-8"))
 
-            # Demander à l'utilisateur de choisir un canal
-            client_socket.send("Choose a channel:".encode("utf-8"))
-            # Attendre la réponse de l'utilisateur
-            channel_choice = client_socket.recv(1024).decode().strip()
+            # envoyer la liste des canaux
+            channels = ":".join(self.channels.keys())
+            client_socket.sendall(channels.encode())
 
-            # Associe le client au canal choisi
+            # Attendre la sélection du canal par le client
+            channel_choice = client_socket.recv(1024).decode().strip()
             channel_id = self.get_channel_id_by_name(channel_choice)
             self.clients[client_socket] = channel_id
 
             with self.clients_lock:
-                self.sessions[user_id] = client_socket
+                self.sessions[client_socket] = user_id
 
             while True:
                 message = client_socket.recv(1024).decode()
@@ -73,7 +74,7 @@ class ChatServeur:
 
                 # Récupérer l'ID utilisateur et l'ID du canal
                 channel_id = self.clients[client_socket]
-                user_id = user_id
+                user_id = self.sessions[client_socket]  # Utiliser le socket comme clé
 
                 # Insérer le message dans la base de données
                 message_id = self.insert_message(user_id, message, current_time, channel_id)
@@ -89,7 +90,6 @@ class ChatServeur:
             client_socket.send("Internal server error".encode("utf-8"))
             client_socket.close()
             self.disconnect_client(client_socket)
-
     def disconnect_client(self, client_socket):
         if client_socket in self.clients:
             client_socket.close()
@@ -99,24 +99,35 @@ class ChatServeur:
             if user_id in self.sessions:
                 del self.sessions[user_id]
 
-    def broadcast(self, message, client_socket):
-        for client in list(self.clients.keys()):
-            if client != client_socket and client.fileno() != -1:
+    def get_user_id(self, client_socket):
+        for user_id, socket in self.sessions.items():
+            if socket == client_socket:
+                return user_id
+        return None
+
+    def broadcast(self, message, sender_socket):
+        # Convertir les clés en liste pour éviter les modifications de dictionnaire pendant l'itération
+        for client_socket in list(self.clients.keys()):
+            # Vérifier que le client n'est pas l'expéditeur et que le socket est toujours valide
+            if client_socket != sender_socket and client_socket.fileno() != -1:
                 try:
-                    client.send(message.encode())
+                    # Envoyer le message au client
+                    client_socket.send(message.encode())
                 except socket.error:
+                    # Gérer les erreurs de socket, comme une déconnexion du client
                     print("Client disconnected")
-                    del self.clients[client]
+                    del self.clients[client_socket]
+
 
     def insert_message(self, author_id, content, timestamp, channel_id):
-        user_first_name = self.get_user_first_name(author_id)
-        if user_first_name is None:
-            print("Error: User not found for ID:", author_id)
-            return None
-
-        query = "INSERT INTO messages (author, content, timestamp, channel_id) VALUES (%s, %s, %s, %s)"
-        params = (user_first_name, content, timestamp, channel_id)
         try:
+            user_first_name = self.get_user_first_name(author_id)
+            if user_first_name is None:
+                print("Error: User not found for ID:", author_id)
+                return None
+
+            query = "INSERT INTO messages (author, content, timestamp, channel_id) VALUES (%s, %s, %s, %s)"
+            params = (user_first_name, content, timestamp, channel_id)
             with self.db.get_connection() as connection:
                 cursor = connection.cursor()
                 cursor.execute(query, params)
@@ -128,14 +139,15 @@ class ChatServeur:
             print("Error inserting message into database:", err)
             return None
 
+
     def authenticate_user(self, email, password):
         query = "SELECT id FROM users WHERE email = %s AND password = %s"
         params = (email, password)
         result = self.db.fetch_data(query, params)
         
-        # Récupére tous les user_id correspondant aux informations d'identification fournies
-        user_ids = [row[0] for row in result] if result else []
-        return email, password, user_ids[0] if user_ids else None
+        # Récupérer le premier user_id correspondant aux informations d'identification fournies
+        user_id = result[0][0] if result else None
+        return email, password, user_id
 
     def get_user_first_name(self, user_id):
         query = "SELECT first_name FROM users WHERE id = %s"
@@ -144,13 +156,13 @@ class ChatServeur:
         return result[0][0] if result else None
 
     def get_channel_id_by_name(self, channel_name):
-        for channel in self.channels:
-            if channel.name == channel_name:
-                return channel.id
+        for channel_id, channel_info in self.channels.items():
+            if channel_info.name == channel_name:
+                return channel_id
         return None
 
 if __name__ == "__main__":
-    HOST = '10.10.100.103'
+    HOST = '10.10.0.38'                                                  #'10.10.100.103'
     PORT = 5000
     serveur = ChatServeur(HOST, PORT)
     serveur.start()
